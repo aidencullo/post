@@ -9,14 +9,13 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0f0f0f;
-      color: #e8e8e8;
+      background: #fafafa;
+      color: #111;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 24px;
+      padding: 48px 24px;
     }
 
     .container {
@@ -24,221 +23,165 @@
       max-width: 680px;
     }
 
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 56px;
+    }
+
     .logo {
-      font-size: 22px;
+      font-size: 18px;
       font-weight: 700;
-      letter-spacing: -0.5px;
-      margin-bottom: 40px;
-      color: #fff;
+      color: #111;
+      text-decoration: none;
+      letter-spacing: -0.3px;
     }
 
-    .logo span { color: #6ee7b7; }
+    .logo span { color: #16a37f; }
 
-    h1 {
-      font-size: 15px;
+    .new-btn {
+      font-size: 13px;
       font-weight: 500;
-      color: #888;
-      margin-bottom: 16px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
-      color: #e8e8e8;
-      font-size: 22px;
-      font-weight: 600;
-      padding: 14px 16px;
-      margin-bottom: 12px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    input[type="text"]::placeholder { color: #444; }
-    input[type="text"]:focus { border-color: #444; }
-
-    textarea {
-      width: 100%;
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
-      color: #e8e8e8;
-      font-size: 16px;
-      line-height: 1.7;
-      padding: 16px;
-      resize: vertical;
-      min-height: 260px;
-      outline: none;
-      transition: border-color 0.15s;
-      font-family: inherit;
-    }
-
-    textarea::placeholder { color: #444; }
-    textarea:focus { border-color: #444; }
-
-    button {
-      margin-top: 16px;
-      background: #6ee7b7;
-      color: #0a0a0a;
-      border: none;
-      border-radius: 8px;
-      padding: 13px 28px;
-      font-size: 15px;
-      font-weight: 600;
+      color: #555;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 6px 14px;
       cursor: pointer;
-      transition: background 0.15s, opacity 0.15s;
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
     }
 
-    button:hover { background: #86efcb; }
-    button:active { opacity: 0.85; }
+    .new-btn:hover { border-color: #aaa; color: #111; }
 
-    /* URL share box */
-    .url-box {
-      display: none;
-      margin-top: 20px;
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
-      padding: 14px 16px;
+    /* Editable fields shared style */
+    [contenteditable] {
+      outline: none;
+      cursor: text;
+      border-radius: 4px;
+      transition: background 0.1s;
+    }
+
+    [contenteditable]:hover { background: #f0f0f0; }
+    [contenteditable]:focus { background: #f0f0f0; }
+
+    [contenteditable]:empty:before {
+      content: attr(data-placeholder);
+      color: #bbb;
+      pointer-events: none;
+    }
+
+    .post-title {
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #111;
+      margin-bottom: 10px;
+      padding: 4px 6px;
+      margin-left: -6px;
+      min-height: 46px;
+    }
+
+    .post-meta {
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 32px;
+      padding-left: 2px;
+    }
+
+    .post-body {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #333;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      padding: 4px 6px;
+      margin-left: -6px;
+      min-height: 200px;
+    }
+
+    /* Save bar — appears when edited */
+    .save-bar {
       display: flex;
       align-items: center;
       gap: 12px;
+      margin-top: 32px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .save-bar.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .save-btn {
+      background: #16a37f;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .save-btn:hover { background: #12896a; }
+
+    /* URL share box */
+    .url-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f0f0f0;
+      border-radius: 7px;
+      padding: 10px 14px;
     }
 
     .url-box.hidden { display: none; }
 
     .url-text {
       flex: 1;
-      font-size: 13px;
-      color: #aaa;
+      font-size: 12px;
+      color: #666;
       word-break: break-all;
       font-family: 'SF Mono', 'Fira Code', monospace;
     }
 
     .copy-btn {
-      margin-top: 0;
-      padding: 8px 16px;
-      font-size: 13px;
-      flex-shrink: 0;
-    }
-
-    /* Post view */
-    .post-view { display: none; }
-    .post-view.active { display: block; }
-
-    .post-title {
-      font-size: 32px;
-      font-weight: 700;
-      line-height: 1.2;
-      margin-bottom: 12px;
-      color: #fff;
-    }
-
-    .post-meta {
-      font-size: 13px;
-      color: #555;
-      margin-bottom: 32px;
-    }
-
-    .post-body {
-      font-size: 17px;
-      line-height: 1.75;
-      color: #ccc;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-
-    .back-link {
-      display: inline-block;
-      margin-bottom: 36px;
-      font-size: 13px;
-      color: #555;
-      text-decoration: none;
-      letter-spacing: 0.03em;
-    }
-
-    .back-link:hover { color: #888; }
-
-    .post-actions {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 36px;
-    }
-
-    .edit-btn {
-      margin-top: 0;
-      background: transparent;
-      border: 1px solid #2a2a2a;
-      color: #888;
-      padding: 8px 18px;
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .edit-btn:hover { background: #1a1a1a; color: #ccc; }
-
-    /* Edit view */
-    .edit-view { display: none; }
-    .edit-view.active { display: block; }
-
-    .edit-note {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      color: #333;
       font-size: 12px;
-      color: #555;
-      margin-top: 10px;
+      font-weight: 500;
+      padding: 5px 12px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color 0.15s;
     }
 
-    /* Create view */
-    .create-view { display: none; }
-    .create-view.active { display: block; }
+    .copy-btn:hover { border-color: #aaa; }
+
+    /* Home create area */
+    .home-hint {
+      font-size: 13px;
+      color: #bbb;
+      margin-bottom: 24px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">Post<span>Drop</span></div>
-
-    <!-- Create view -->
-    <div class="create-view" id="createView">
-      <input type="text" id="titleInput" placeholder="Title" maxlength="200">
-      <textarea id="bodyInput" placeholder="Write something..."></textarea>
-      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-        <button onclick="publish()">Publish &rarr;</button>
-      </div>
-      <div class="url-box hidden" id="urlBox">
-        <span class="url-text" id="urlText"></span>
-        <button class="copy-btn" onclick="copyUrl()">Copy</button>
-      </div>
+    <div class="topbar">
+      <a class="logo" href="#">Post<span>Drop</span></a>
+      <a class="new-btn" href="#">+ New post</a>
     </div>
 
-    <!-- Post view -->
-    <div class="post-view" id="postView">
-      <div class="post-actions">
-        <a class="back-link" href="#">&larr; New post</a>
-        <button class="edit-btn" onclick="startEdit()">Edit</button>
-      </div>
-      <div class="post-title" id="postTitle"></div>
-      <div class="post-meta" id="postMeta"></div>
-      <div class="post-body" id="postBody"></div>
-    </div>
-
-    <!-- Edit view -->
-    <div class="edit-view" id="editView">
-      <div class="post-actions">
-        <a class="back-link" href="#" id="cancelEdit">Cancel</a>
-      </div>
-      <input type="text" id="editTitleInput" placeholder="Title" maxlength="200">
-      <textarea id="editBodyInput" placeholder="Write something..."></textarea>
-      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-        <button onclick="publishEdit()">Save &rarr;</button>
-      </div>
-      <div class="url-box hidden" id="editUrlBox">
-        <span class="url-text" id="editUrlText"></span>
-        <button class="copy-btn" onclick="copyEditUrl()">Copy</button>
-      </div>
-      <p class="edit-note">Saving creates a new URL with your changes.</p>
-    </div>
+    <div id="app"></div>
   </div>
 
   <script>
@@ -249,103 +192,131 @@
     function parsePost(hash) {
       try {
         if (!hash.startsWith('p=')) return null;
-        const encoded = hash.slice(2);
-        return JSON.parse(decodeURIComponent(atob(encoded)));
-      } catch {
-        return null;
-      }
+        return JSON.parse(decodeURIComponent(atob(hash.slice(2))));
+      } catch { return null; }
     }
 
-    let currentPost = null;
+    function encodePost(post) {
+      return btoa(encodeURIComponent(JSON.stringify(post)));
+    }
 
-    function showOnly(id) {
-      ['createView', 'postView', 'editView'].forEach(v => {
-        document.getElementById(v).classList.toggle('active', v === id);
+    function buildUrl(post) {
+      return window.location.origin + window.location.pathname + '#p=' + encodePost(post);
+    }
+
+    function formatDate(ts) {
+      return new Date(ts).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function renderCreate() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <p class="home-hint">Click to start writing.</p>
+        <div
+          class="post-title"
+          contenteditable="true"
+          data-placeholder="Title"
+          id="ceTitle"
+        ></div>
+        <div
+          class="post-body"
+          contenteditable="true"
+          data-placeholder="Write something..."
+          id="ceBody"
+        ></div>
+        <div class="save-bar visible" style="margin-top:28px;">
+          <button class="save-btn" onclick="publishNew()">Publish →</button>
+          <div class="url-box hidden" id="urlBox">
+            <span class="url-text" id="urlText"></span>
+            <button class="copy-btn" onclick="copyUrl('urlText', this)">Copy</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('ceTitle').focus();
+    }
+
+    function renderPost(post) {
+      const app = document.getElementById('app');
+      const created = post.created;
+
+      app.innerHTML = `
+        <div
+          class="post-title"
+          contenteditable="true"
+          data-placeholder="Title"
+          id="ceTitle"
+        >${escHtml(post.title || '')}</div>
+        <div class="post-meta">${formatDate(created)}</div>
+        <div
+          class="post-body"
+          contenteditable="true"
+          data-placeholder="Write something..."
+          id="ceBody"
+        >${escHtml(post.body || '')}</div>
+        <div class="save-bar" id="saveBar" style="margin-top:28px;">
+          <button class="save-btn" onclick="publishEdit(${created})">Save →</button>
+          <div class="url-box hidden" id="urlBox">
+            <span class="url-text" id="urlText"></span>
+            <button class="copy-btn" onclick="copyUrl('urlText', this)">Copy</button>
+          </div>
+        </div>
+      `;
+
+      // Show save bar on any edit
+      function onInput() {
+        document.getElementById('saveBar').classList.add('visible');
+        document.getElementById('urlBox').classList.add('hidden');
+      }
+      document.getElementById('ceTitle').addEventListener('input', onInput);
+      document.getElementById('ceBody').addEventListener('input', onInput);
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function getEditorValues() {
+      const title = document.getElementById('ceTitle').innerText.trim();
+      const body = document.getElementById('ceBody').innerText.trim();
+      return { title, body };
+    }
+
+    function publishNew() {
+      const { title, body } = getEditorValues();
+      if (!title && !body) { document.getElementById('ceTitle').focus(); return; }
+      const post = { title, body, created: Date.now() };
+      showUrl('urlBox', 'urlText', buildUrl(post));
+    }
+
+    function publishEdit(created) {
+      const { title, body } = getEditorValues();
+      if (!title && !body) { document.getElementById('ceTitle').focus(); return; }
+      const post = { title, body, created };
+      showUrl('urlBox', 'urlText', buildUrl(post));
+    }
+
+    function showUrl(boxId, textId, url) {
+      document.getElementById(textId).textContent = url;
+      document.getElementById(boxId).classList.remove('hidden');
+    }
+
+    function copyUrl(textId, btn) {
+      const url = document.getElementById(textId).textContent;
+      navigator.clipboard.writeText(url).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 1800);
       });
     }
 
     function render() {
-      const hash = getHash();
-      const post = parsePost(hash);
-
+      const post = parsePost(getHash());
       if (post) {
-        currentPost = post;
-        showOnly('postView');
-
         document.title = post.title ? post.title + ' — PostDrop' : 'PostDrop';
-        document.getElementById('postTitle').textContent = post.title || '(Untitled)';
-        document.getElementById('postBody').textContent = post.body || '';
-
-        const d = new Date(post.created);
-        document.getElementById('postMeta').textContent =
-          d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        renderPost(post);
       } else {
-        currentPost = null;
-        showOnly('createView');
-        document.getElementById('urlBox').classList.add('hidden');
         document.title = 'PostDrop';
+        renderCreate();
       }
-    }
-
-    function startEdit() {
-      if (!currentPost) return;
-      document.getElementById('editTitleInput').value = currentPost.title || '';
-      document.getElementById('editBodyInput').value = currentPost.body || '';
-      document.getElementById('editUrlBox').classList.add('hidden');
-      document.getElementById('cancelEdit').href = window.location.hash;
-      showOnly('editView');
-    }
-
-    function publishEdit() {
-      const title = document.getElementById('editTitleInput').value.trim();
-      const body = document.getElementById('editBodyInput').value.trim();
-
-      if (!title && !body) {
-        document.getElementById('editTitleInput').focus();
-        return;
-      }
-
-      const post = { title, body, created: currentPost ? currentPost.created : Date.now() };
-      const encoded = btoa(encodeURIComponent(JSON.stringify(post)));
-      const url = window.location.origin + window.location.pathname + '#p=' + encoded;
-
-      document.getElementById('editUrlText').textContent = url;
-      document.getElementById('editUrlBox').classList.remove('hidden');
-    }
-
-    function copyEditUrl() {
-      const url = document.getElementById('editUrlText').textContent;
-      navigator.clipboard.writeText(url).then(() => {
-        const btn = document.getElementById('editUrlBox').querySelector('.copy-btn');
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = 'Copy', 1800);
-      });
-    }
-
-    function publish() {
-      const title = document.getElementById('titleInput').value.trim();
-      const body = document.getElementById('bodyInput').value.trim();
-
-      if (!title && !body) {
-        document.getElementById('titleInput').focus();
-        return;
-      }
-
-      const post = { title, body, created: Date.now() };
-      const encoded = btoa(encodeURIComponent(JSON.stringify(post)));
-      const url = window.location.origin + window.location.pathname + '#p=' + encoded;
-
-      document.getElementById('urlText').textContent = url;
-      document.getElementById('urlBox').classList.remove('hidden');
-    }
-
-    function copyUrl() {
-      const url = document.getElementById('urlText').textContent;
-      navigator.clipboard.writeText(url).then(() => {
-        const btn = document.querySelector('.copy-btn');
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = 'Copy', 1800);
-      });
     }
 
     window.addEventListener('hashchange', render);
