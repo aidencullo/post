@@ -30,15 +30,6 @@
       pointer-events: none;
     }
 
-    #title {
-      font-size: 36px;
-      font-weight: 700;
-      line-height: 1.2;
-      color: #111;
-      margin-bottom: 24px;
-      min-height: 44px;
-    }
-
     #body {
       font-size: 18px;
       line-height: 1.8;
@@ -66,7 +57,6 @@
   </style>
 </head>
 <body>
-  <div id="title" contenteditable="true" data-placeholder="Title"></div>
   <div id="body" contenteditable="true" data-placeholder=""></div>
   <button id="copy" onclick="copyLink()">copy link</button>
 
@@ -91,11 +81,9 @@
     }
 
     function updateHash() {
-      const title = document.getElementById('title').innerText.trim();
       const body = document.getElementById('body').innerText.trim();
-      const hash = encodePost({ title, body, created });
+      const hash = encodePost({ body, created });
       history.replaceState(null, '', hash);
-      document.title = title || 'PostDrop';
     }
 
     function copyLink() {
@@ -112,15 +100,12 @@
 
     if (post) {
       created = post.created;
-      document.getElementById('title').innerText = post.title || '';
       document.getElementById('body').innerText = post.body || '';
-      document.title = post.title || 'PostDrop';
     } else {
       // Redirect to a fresh post URL immediately
       updateHash();
     }
 
-    document.getElementById('title').addEventListener('input', scheduleUpdate);
     document.getElementById('body').addEventListener('input', scheduleUpdate);
   </script>
 </body>
