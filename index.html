@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PostDrop</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #e8e8e8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 40px;
+      color: #fff;
+    }
+
+    .logo span { color: #6ee7b7; }
+
+    h1 {
+      font-size: 15px;
+      font-weight: 500;
+      color: #888;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      color: #e8e8e8;
+      font-size: 22px;
+      font-weight: 600;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"]::placeholder { color: #444; }
+    input[type="text"]:focus { border-color: #444; }
+
+    textarea {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      color: #e8e8e8;
+      font-size: 16px;
+      line-height: 1.7;
+      padding: 16px;
+      resize: vertical;
+      min-height: 260px;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+
+    textarea::placeholder { color: #444; }
+    textarea:focus { border-color: #444; }
+
+    button {
+      margin-top: 16px;
+      background: #6ee7b7;
+      color: #0a0a0a;
+      border: none;
+      border-radius: 8px;
+      padding: 13px 28px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    button:hover { background: #86efcb; }
+    button:active { opacity: 0.85; }
+
+    /* URL share box */
+    .url-box {
+      display: none;
+      margin-top: 20px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .url-box.hidden { display: none; }
+
+    .url-text {
+      flex: 1;
+      font-size: 13px;
+      color: #aaa;
+      word-break: break-all;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .copy-btn {
+      margin-top: 0;
+      padding: 8px 16px;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    /* Post view */
+    .post-view { display: none; }
+    .post-view.active { display: block; }
+
+    .post-title {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .post-meta {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 32px;
+    }
+
+    .post-body {
+      font-size: 17px;
+      line-height: 1.75;
+      color: #ccc;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 36px;
+      font-size: 13px;
+      color: #555;
+      text-decoration: none;
+      letter-spacing: 0.03em;
+    }
+
+    .back-link:hover { color: #888; }
+
+    /* Create view */
+    .create-view { display: none; }
+    .create-view.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Post<span>Drop</span></div>
+
+    <!-- Create view -->
+    <div class="create-view" id="createView">
+      <input type="text" id="titleInput" placeholder="Title" maxlength="200">
+      <textarea id="bodyInput" placeholder="Write something..."></textarea>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <button onclick="publish()">Publish &rarr;</button>
+      </div>
+      <div class="url-box hidden" id="urlBox">
+        <span class="url-text" id="urlText"></span>
+        <button class="copy-btn" onclick="copyUrl()">Copy</button>
+      </div>
+    </div>
+
+    <!-- Post view -->
+    <div class="post-view" id="postView">
+      <a class="back-link" href="#">&larr; New post</a>
+      <div class="post-title" id="postTitle"></div>
+      <div class="post-meta" id="postMeta"></div>
+      <div class="post-body" id="postBody"></div>
+    </div>
+  </div>
+
+  <script>
+    function getHash() {
+      return window.location.hash.slice(1);
+    }
+
+    function parsePost(hash) {
+      try {
+        if (!hash.startsWith('p=')) return null;
+        const encoded = hash.slice(2);
+        return JSON.parse(decodeURIComponent(atob(encoded)));
+      } catch {
+        return null;
+      }
+    }
+
+    function render() {
+      const hash = getHash();
+      const post = parsePost(hash);
+
+      if (post) {
+        document.getElementById('createView').classList.remove('active');
+        document.getElementById('postView').classList.add('active');
+
+        document.title = post.title ? post.title + ' — PostDrop' : 'PostDrop';
+        document.getElementById('postTitle').textContent = post.title || '(Untitled)';
+        document.getElementById('postBody').textContent = post.body || '';
+
+        const d = new Date(post.created);
+        document.getElementById('postMeta').textContent =
+          d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      } else {
+        document.getElementById('postView').classList.remove('active');
+        document.getElementById('createView').classList.add('active');
+        document.getElementById('urlBox').classList.add('hidden');
+        document.title = 'PostDrop';
+      }
+    }
+
+    function publish() {
+      const title = document.getElementById('titleInput').value.trim();
+      const body = document.getElementById('bodyInput').value.trim();
+
+      if (!title && !body) {
+        document.getElementById('titleInput').focus();
+        return;
+      }
+
+      const post = { title, body, created: Date.now() };
+      const encoded = btoa(encodeURIComponent(JSON.stringify(post)));
+      const url = window.location.origin + window.location.pathname + '#p=' + encoded;
+
+      document.getElementById('urlText').textContent = url;
+      document.getElementById('urlBox').classList.remove('hidden');
+    }
+
+    function copyUrl() {
+      const url = document.getElementById('urlText').textContent;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 1800);
+      });
+    }
+
+    window.addEventListener('hashchange', render);
+    render();
+  </script>
+</body>
+</html>
