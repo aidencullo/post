@@ -61,27 +61,48 @@
   <button id="copy" onclick="copyLink()">copy link</button>
 
   <script>
-    function parsePost(hash) {
-      try {
-        if (!hash.startsWith('p=')) return null;
-        return JSON.parse(decodeURIComponent(atob(hash.slice(2))));
-      } catch { return null; }
+    const BASE = '/post/';
+
+    // GitHub Pages 404 redirect passes path as ?p=
+    const redirected = new URLSearchParams(location.search).get('p');
+    if (redirected) history.replaceState(null, '', redirected);
+
+    function shortId() {
+      return Math.random().toString(36).slice(2, 10);
     }
 
-    function encodePost(post) {
-      return '#p=' + btoa(encodeURIComponent(JSON.stringify(post)));
+    function save(id, text) {
+      localStorage.setItem('post:' + id, text);
     }
 
-    let created = Date.now();
+    function load(id) {
+      return localStorage.getItem('post:' + id);
+    }
+
+    let currentId = location.pathname.replace(BASE, '').replace(/\//g, '');
+
+    function init() {
+      if (currentId) {
+        const text = load(currentId);
+        if (text !== null) {
+          document.getElementById('content').innerText = text;
+        } else {
+          document.getElementById('content').innerText = '(post not found on this device)';
+        }
+      } else {
+        currentId = shortId();
+        history.replaceState(null, '', BASE + currentId);
+        document.getElementById('content').focus();
+      }
+    }
+
     let timer;
-
-    function scheduleUpdate() {
+    document.getElementById('content').addEventListener('input', () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        const body = document.getElementById('content').innerText.trim();
-        history.replaceState(null, '', encodePost({ body, created }));
-      }, 400);
-    }
+        save(currentId, document.getElementById('content').innerText.trim());
+      }, 300);
+    });
 
     function copyLink() {
       navigator.clipboard.writeText(location.href).then(() => {
@@ -91,17 +112,7 @@
       });
     }
 
-    const post = parsePost(location.hash.slice(1));
-    if (post) {
-      created = post.created;
-      document.getElementById('content').innerText = post.body || '';
-    } else {
-      const body = document.getElementById('content').innerText.trim();
-      history.replaceState(null, '', encodePost({ body, created }));
-      document.getElementById('content').focus();
-    }
-
-    document.getElementById('content').addEventListener('input', scheduleUpdate);
+    init();
   </script>
 </body>
 </html>

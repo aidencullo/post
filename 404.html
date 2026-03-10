@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<script>
+  // GitHub Pages SPA redirect trick: pass the path as a query param
+  window.location.replace(
+    '/?p=' + encodeURIComponent(location.pathname + location.search + location.hash)
+  );
+</script>
