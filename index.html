@@ -162,6 +162,34 @@
 
     .back-link:hover { color: #888; }
 
+    .post-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+
+    .edit-btn {
+      margin-top: 0;
+      background: transparent;
+      border: 1px solid #2a2a2a;
+      color: #888;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .edit-btn:hover { background: #1a1a1a; color: #ccc; }
+
+    /* Edit view */
+    .edit-view { display: none; }
+    .edit-view.active { display: block; }
+
+    .edit-note {
+      font-size: 12px;
+      color: #555;
+      margin-top: 10px;
+    }
+
     /* Create view */
     .create-view { display: none; }
     .create-view.active { display: block; }
@@ -186,10 +214,30 @@
 
     <!-- Post view -->
     <div class="post-view" id="postView">
-      <a class="back-link" href="#">&larr; New post</a>
+      <div class="post-actions">
+        <a class="back-link" href="#">&larr; New post</a>
+        <button class="edit-btn" onclick="startEdit()">Edit</button>
+      </div>
       <div class="post-title" id="postTitle"></div>
       <div class="post-meta" id="postMeta"></div>
       <div class="post-body" id="postBody"></div>
+    </div>
+
+    <!-- Edit view -->
+    <div class="edit-view" id="editView">
+      <div class="post-actions">
+        <a class="back-link" href="#" id="cancelEdit">Cancel</a>
+      </div>
+      <input type="text" id="editTitleInput" placeholder="Title" maxlength="200">
+      <textarea id="editBodyInput" placeholder="Write something..."></textarea>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <button onclick="publishEdit()">Save &rarr;</button>
+      </div>
+      <div class="url-box hidden" id="editUrlBox">
+        <span class="url-text" id="editUrlText"></span>
+        <button class="copy-btn" onclick="copyEditUrl()">Copy</button>
+      </div>
+      <p class="edit-note">Saving creates a new URL with your changes.</p>
     </div>
   </div>
 
@@ -208,13 +256,21 @@
       }
     }
 
+    let currentPost = null;
+
+    function showOnly(id) {
+      ['createView', 'postView', 'editView'].forEach(v => {
+        document.getElementById(v).classList.toggle('active', v === id);
+      });
+    }
+
     function render() {
       const hash = getHash();
       const post = parsePost(hash);
 
       if (post) {
-        document.getElementById('createView').classList.remove('active');
-        document.getElementById('postView').classList.add('active');
+        currentPost = post;
+        showOnly('postView');
 
         document.title = post.title ? post.title + ' — PostDrop' : 'PostDrop';
         document.getElementById('postTitle').textContent = post.title || '(Untitled)';
@@ -224,11 +280,46 @@
         document.getElementById('postMeta').textContent =
           d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
       } else {
-        document.getElementById('postView').classList.remove('active');
-        document.getElementById('createView').classList.add('active');
+        currentPost = null;
+        showOnly('createView');
         document.getElementById('urlBox').classList.add('hidden');
         document.title = 'PostDrop';
       }
+    }
+
+    function startEdit() {
+      if (!currentPost) return;
+      document.getElementById('editTitleInput').value = currentPost.title || '';
+      document.getElementById('editBodyInput').value = currentPost.body || '';
+      document.getElementById('editUrlBox').classList.add('hidden');
+      document.getElementById('cancelEdit').href = window.location.hash;
+      showOnly('editView');
+    }
+
+    function publishEdit() {
+      const title = document.getElementById('editTitleInput').value.trim();
+      const body = document.getElementById('editBodyInput').value.trim();
+
+      if (!title && !body) {
+        document.getElementById('editTitleInput').focus();
+        return;
+      }
+
+      const post = { title, body, created: currentPost ? currentPost.created : Date.now() };
+      const encoded = btoa(encodeURIComponent(JSON.stringify(post)));
+      const url = window.location.origin + window.location.pathname + '#p=' + encoded;
+
+      document.getElementById('editUrlText').textContent = url;
+      document.getElementById('editUrlBox').classList.remove('hidden');
+    }
+
+    function copyEditUrl() {
+      const url = document.getElementById('editUrlText').textContent;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById('editUrlBox').querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 1800);
+      });
     }
 
     function publish() {
