@@ -9,186 +9,68 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #fafafa;
+      background: #fff;
       color: #111;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 48px 24px;
-    }
-
-    .container {
-      width: 100%;
+      padding: 72px 32px;
       max-width: 680px;
+      margin: 0 auto;
     }
 
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 56px;
-    }
-
-    .logo {
-      font-size: 18px;
-      font-weight: 700;
-      color: #111;
-      text-decoration: none;
-      letter-spacing: -0.3px;
-    }
-
-    .logo span { color: #16a37f; }
-
-    .new-btn {
-      font-size: 13px;
-      font-weight: 500;
-      color: #555;
-      background: none;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 6px 14px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: border-color 0.15s, color 0.15s;
-    }
-
-    .new-btn:hover { border-color: #aaa; color: #111; }
-
-    /* Editable fields shared style */
     [contenteditable] {
       outline: none;
       cursor: text;
-      border-radius: 4px;
-      transition: background 0.1s;
+      display: block;
+      width: 100%;
     }
-
-    [contenteditable]:hover { background: #f0f0f0; }
-    [contenteditable]:focus { background: #f0f0f0; }
 
     [contenteditable]:empty:before {
       content: attr(data-placeholder);
-      color: #bbb;
+      color: #ccc;
       pointer-events: none;
     }
 
-    .post-title {
-      font-size: 34px;
+    #title {
+      font-size: 36px;
       font-weight: 700;
       line-height: 1.2;
       color: #111;
-      margin-bottom: 10px;
-      padding: 4px 6px;
-      margin-left: -6px;
-      min-height: 46px;
+      margin-bottom: 24px;
+      min-height: 44px;
     }
 
-    .post-meta {
-      font-size: 13px;
-      color: #aaa;
-      margin-bottom: 32px;
-      padding-left: 2px;
-    }
-
-    .post-body {
-      font-size: 17px;
+    #body {
+      font-size: 18px;
       line-height: 1.8;
       color: #333;
       white-space: pre-wrap;
       word-wrap: break-word;
-      padding: 4px 6px;
-      margin-left: -6px;
-      min-height: 200px;
+      min-height: 120px;
     }
 
-    /* Save bar — appears when edited */
-    .save-bar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 32px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-    }
-
-    .save-bar.visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .save-btn {
-      background: #16a37f;
-      color: #fff;
-      border: none;
-      border-radius: 7px;
-      padding: 10px 22px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .save-btn:hover { background: #12896a; }
-
-    /* URL share box */
-    .url-box {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: #f0f0f0;
-      border-radius: 7px;
-      padding: 10px 14px;
-    }
-
-    .url-box.hidden { display: none; }
-
-    .url-text {
-      flex: 1;
+    #copy {
+      position: fixed;
+      top: 20px;
+      right: 24px;
       font-size: 12px;
-      color: #666;
-      word-break: break-all;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-    }
-
-    .copy-btn {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      color: #333;
-      font-size: 12px;
-      font-weight: 500;
-      padding: 5px 12px;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: border-color 0.15s;
-    }
-
-    .copy-btn:hover { border-color: #aaa; }
-
-    /* Home create area */
-    .home-hint {
-      font-size: 13px;
       color: #bbb;
-      margin-bottom: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
     }
+
+    #copy:hover { color: #555; background: #f0f0f0; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <a class="logo" href="#">Post<span>Drop</span></a>
-      <a class="new-btn" href="#">+ New post</a>
-    </div>
-
-    <div id="app"></div>
-  </div>
+  <div id="title" contenteditable="true" data-placeholder="Title"></div>
+  <div id="body" contenteditable="true" data-placeholder=""></div>
+  <button id="copy" onclick="copyLink()">copy link</button>
 
   <script>
-    function getHash() {
-      return window.location.hash.slice(1);
-    }
-
     function parsePost(hash) {
       try {
         if (!hash.startsWith('p=')) return null;
@@ -197,130 +79,49 @@
     }
 
     function encodePost(post) {
-      return btoa(encodeURIComponent(JSON.stringify(post)));
+      return '#p=' + btoa(encodeURIComponent(JSON.stringify(post)));
     }
 
-    function buildUrl(post) {
-      return window.location.origin + window.location.pathname + '#p=' + encodePost(post);
+    let created = Date.now();
+    let updateTimer;
+
+    function scheduleUpdate() {
+      clearTimeout(updateTimer);
+      updateTimer = setTimeout(updateHash, 400);
     }
 
-    function formatDate(ts) {
-      return new Date(ts).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    function updateHash() {
+      const title = document.getElementById('title').innerText.trim();
+      const body = document.getElementById('body').innerText.trim();
+      const hash = encodePost({ title, body, created });
+      history.replaceState(null, '', hash);
+      document.title = title || 'PostDrop';
     }
 
-    function renderCreate() {
-      const app = document.getElementById('app');
-      app.innerHTML = `
-        <p class="home-hint">Click to start writing.</p>
-        <div
-          class="post-title"
-          contenteditable="true"
-          data-placeholder="Title"
-          id="ceTitle"
-        ></div>
-        <div
-          class="post-body"
-          contenteditable="true"
-          data-placeholder="Write something..."
-          id="ceBody"
-        ></div>
-        <div class="save-bar visible" style="margin-top:28px;">
-          <button class="save-btn" onclick="publishNew()">Publish →</button>
-          <div class="url-box hidden" id="urlBox">
-            <span class="url-text" id="urlText"></span>
-            <button class="copy-btn" onclick="copyUrl('urlText', this)">Copy</button>
-          </div>
-        </div>
-      `;
-      document.getElementById('ceTitle').focus();
-    }
-
-    function renderPost(post) {
-      const app = document.getElementById('app');
-      const created = post.created;
-
-      app.innerHTML = `
-        <div
-          class="post-title"
-          contenteditable="true"
-          data-placeholder="Title"
-          id="ceTitle"
-        >${escHtml(post.title || '')}</div>
-        <div class="post-meta">${formatDate(created)}</div>
-        <div
-          class="post-body"
-          contenteditable="true"
-          data-placeholder="Write something..."
-          id="ceBody"
-        >${escHtml(post.body || '')}</div>
-        <div class="save-bar" id="saveBar" style="margin-top:28px;">
-          <button class="save-btn" onclick="publishEdit(${created})">Save →</button>
-          <div class="url-box hidden" id="urlBox">
-            <span class="url-text" id="urlText"></span>
-            <button class="copy-btn" onclick="copyUrl('urlText', this)">Copy</button>
-          </div>
-        </div>
-      `;
-
-      // Show save bar on any edit
-      function onInput() {
-        document.getElementById('saveBar').classList.add('visible');
-        document.getElementById('urlBox').classList.add('hidden');
-      }
-      document.getElementById('ceTitle').addEventListener('input', onInput);
-      document.getElementById('ceBody').addEventListener('input', onInput);
-    }
-
-    function escHtml(str) {
-      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    function getEditorValues() {
-      const title = document.getElementById('ceTitle').innerText.trim();
-      const body = document.getElementById('ceBody').innerText.trim();
-      return { title, body };
-    }
-
-    function publishNew() {
-      const { title, body } = getEditorValues();
-      if (!title && !body) { document.getElementById('ceTitle').focus(); return; }
-      const post = { title, body, created: Date.now() };
-      showUrl('urlBox', 'urlText', buildUrl(post));
-    }
-
-    function publishEdit(created) {
-      const { title, body } = getEditorValues();
-      if (!title && !body) { document.getElementById('ceTitle').focus(); return; }
-      const post = { title, body, created };
-      showUrl('urlBox', 'urlText', buildUrl(post));
-    }
-
-    function showUrl(boxId, textId, url) {
-      document.getElementById(textId).textContent = url;
-      document.getElementById(boxId).classList.remove('hidden');
-    }
-
-    function copyUrl(textId, btn) {
-      const url = document.getElementById(textId).textContent;
-      navigator.clipboard.writeText(url).then(() => {
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = 'Copy', 1800);
+    function copyLink() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        const btn = document.getElementById('copy');
+        btn.textContent = 'copied!';
+        setTimeout(() => btn.textContent = 'copy link', 1800);
       });
     }
 
-    function render() {
-      const post = parsePost(getHash());
-      if (post) {
-        document.title = post.title ? post.title + ' — PostDrop' : 'PostDrop';
-        renderPost(post);
-      } else {
-        document.title = 'PostDrop';
-        renderCreate();
-      }
+    // Init
+    const hash = window.location.hash.slice(1);
+    const post = parsePost(hash);
+
+    if (post) {
+      created = post.created;
+      document.getElementById('title').innerText = post.title || '';
+      document.getElementById('body').innerText = post.body || '';
+      document.title = post.title || 'PostDrop';
+    } else {
+      // Redirect to a fresh post URL immediately
+      updateHash();
     }
 
-    window.addEventListener('hashchange', render);
-    render();
+    document.getElementById('title').addEventListener('input', scheduleUpdate);
+    document.getElementById('body').addEventListener('input', scheduleUpdate);
   </script>
 </body>
 </html>
