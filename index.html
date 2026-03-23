@@ -86,14 +86,16 @@ function shortId() {
           document.getElementById('content').innerText = '(post not found on this device)';
         }
       } else {
-        currentId = shortId();
-        history.replaceState(null, '', BASE + currentId);
         document.getElementById('content').focus();
       }
     }
 
     let timer;
     document.getElementById('content').addEventListener('input', () => {
+      if (!currentId) {
+        currentId = shortId();
+        history.replaceState(null, '', BASE + currentId);
+      }
       clearTimeout(timer);
       timer = setTimeout(() => {
         save(currentId, document.getElementById('content').innerText.trim());
